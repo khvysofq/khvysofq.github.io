@@ -4,13 +4,14 @@ title: P2P Solution设计与实现
 ---
 ##功能介绍
 第一章 首先会进行功能上面的物理架构介绍，有什么样的功能，能够在什么环境下面运行等等。
-
 ![协议嵌套](/img/p2p_sloution/p2p_sloution_framework.png)
-- 最顶层逻辑是User Contorl层，这一层创建下一层需要的部分，同时用户可以在这一层使用一个简单的函数使用程序运行起来，所有关于程 序的STUN地址的设置、Peer的连接都是属于其它程序通过网络客户端来进行连接的。
-- 下一层主要分为三大部分，一部分是与服务器进行连接称为P2P Server Management，一部分是与本机的Socket进行服务器监听连接P2PProxyServerManagement，一部分是管理本机与代理Socket通信之间的管理，P2P Connection Management。其中，P2PConnectionManagement是整个程序当中最主要的部分，最重要的代理逻辑都在这一层当中实现。这三大部分全部使用的单例模式，也就是说，在整个程序的运行过程当中有且只有一个这样的对象。
-- P2PConnectionManagement对象的主要功能分为两部分，一部分是管理P2PConnectionICE对象，一部分是管理ProxyP2PSession对象。对于P2PConnectionICE对象而言，P2PConnectionManagement主要是创建这个对象，同时调用P2PConnectionICE的ConnectionToRemotePeer函数来创建一个新的P2P连接，同时这个函数返回的一是一个可以使用的Stream对象，这个Stream对象就是程序以后过程当中代理数据交换的接口。一个新的Stream对象可以用来创建一个ProxyP2PSession对象。ProxyP2PSession就主要管理着具体的Proxy连接。
-- 一个ProxyP2PSession当中主要有两种对象，一个是P2PConnectionImplementator对象，这个对象对应了一个Stream，它主要管理Stream对象的消息，同时对数据发送做加包头，对数据接收进行解包头的工作，这一层可以说是一个对Stream对象的封装。ProxyP2PSession另一个是一个ProxySocketBegin对象的Map结构体，一个peer连接当中可以复用多个数据通道，每一个数据通道都对应了一个ProxySocketBegin对象。在连接的过程当中，如果ProxyP2PSession管理的所有ProxySocketBegin对象都关闭的话，那么这个ProxyP2PSession对象也会立刻关闭。
-\item ProxySocketBegin对象只是由ProxyP2PSession对象来创建和最终消除的。
+<!--more-->
+
+* 最顶层逻辑是User Contorl层，这一层创建下一层需要的部分，同时用户可以在这一层使用一个简单的函数使用程序运行起来，所有关于程 序的STUN地址的设置、Peer的连接都是属于其它程序通过网络客户端来进行连接的。
+* 下一层主要分为三大部分，一部分是与服务器进行连接称为P2P Server Management，一部分是与本机的Socket进行服务器监听连接P2PProxyServerManagement，一部分是管理本机与代理Socket通信之间的管理，P2P Connection Management。其中，P2PConnectionManagement是整个程序当中最主要的部分，最重要的代理逻辑都在这一层当中实现。这三大部分全部使用的单例模式，也就是说，在整个程序的运行过程当中有且只有一个这样的对象。
+* P2PConnectionManagement对象的主要功能分为两部分，一部分是管理P2PConnectionICE对象，一部分是管理ProxyP2PSession对象。对于P2PConnectionICE对象而言，P2PConnectionManagement主要是创建这个对象，同时调用P2PConnectionICE的ConnectionToRemotePeer函数来创建一个新的P2P连接，同时这个函数返回的一是一个可以使用的Stream对象，这个Stream对象就是程序以后过程当中代理数据交换的接口。一个新的Stream对象可以用来创建一个ProxyP2PSession对象。ProxyP2PSession就主要管理着具体的Proxy连接。
+* 一个ProxyP2PSession当中主要有两种对象，一个是P2PConnectionImplementator对象，这个对象对应了一个Stream，它主要管理Stream对象的消息，同时对数据发送做加包头，对数据接收进行解包头的工作，这一层可以说是一个对Stream对象的封装。ProxyP2PSession另一个是一个ProxySocketBegin对象的Map结构体，一个peer连接当中可以复用多个数据通道，每一个数据通道都对应了一个ProxySocketBegin对象。在连接的过程当中，如果ProxyP2PSession管理的所有ProxySocketBegin对象都关闭的话，那么这个ProxyP2PSession对象也会立刻关闭。
+* ProxySocketBegin对象只是由ProxyP2PSession对象来创建和最终消除的。
 ###ProxySocketBegin的生命周期
 
 ![协议嵌套](/img/p2p_sloution/ProxySocketBegin.png)
@@ -19,8 +20,8 @@ title: P2P Solution设计与实现
 
 ProxySocketBegin的创建主要由两个地方完成，而ProxySocketBegin对象的消除只在一个地方进行。
 
-- 由本地监听的服务器端口接收到一个请求之后，根据一个实际的Socket连接创建的ProxySocketBegin对象。
-- 由远程Peer连接请求本地的Peer建立的一个新的Socket代理请求，而创建的ProxySocketBegin对象。
+* 由本地监听的服务器端口接收到一个请求之后，根据一个实际的Socket连接创建的ProxySocketBegin对象。
+* 由远程Peer连接请求本地的Peer建立的一个新的Socket代理请求，而创建的ProxySocketBegin对象。
 
 在最开始的时候,由ProxySocketServerFactory创建了一个服务器Socket,监听本地的一个端口,当一个新的连接被Accept之后,这个新产生的Socket就会形成一个ProxySocketBegin对象.新的Socket在ProxySocketBein当中与客户端进行通信，知道了客户端想要连接哪个服务器资源。这个时候ProxySocketBegin就会调用P2PConnectionManagement去查询这个服务器资源对应了哪个远端结点、如果这个远端结点已经连接了，那么P2PConnectionManagement就会直接把这个ProxyP2PSession对象返回给ProxySocketBegin,ProxySocketBegin得到Session对象之后，就把自己注册到这个Session当中，由这个Session来进行统一的管理。
 
@@ -40,11 +41,11 @@ ProxySocketBegin对象，在收到Session的P2P连接建立成功的消息之后
 
 产品当中，资源释放往往是一个非常大的问题，它常常会涉及到相当多的临界资源分配，还有异步、极端情况处理等等的问题，这一章的名称虽然叫做资源释放，但是实际上也可以看成“连接保障”，因为合理的释放和分配资源，才能保证一个程序能够长久的运行下去。这一章主要分为几个部分。
 
-- 服务器资源释放和重连
-- ICE部分的资源释放
-- p2p connection management的资源连接和释放
-- Proxy P2P Session 和 Proxy socket begin的资源释放
-- Local Socket Factory的资源释放
+* 服务器资源释放和重连
+* ICE部分的资源释放
+* p2p connection management的资源连接和释放
+* Proxy P2P Session 和 Proxy socket begin的资源释放
+* Local Socket Factory的资源释放
 
 这里面的每一部分的资源释放的同时，都会牵扯到其它部分的处理，实际上，以上的所有部分都没有一个独立的完整的过程，牵一发，而动全身。这一部分的合理性又对整个程序的架构是一个非常大的考验。
 
@@ -78,23 +79,23 @@ P2PConnectionManagement对象是一个全局唯一的静态对象，它在整个
 
 ##测试用例设计
 ***
-- **参与测试程序**：两个Peer结点，一个RTSP客户端，一个RTSPServer。
-- **测试描述**:两个Peer结点通过RTSP客户端正常进行连接，RTSPServer正常运行，然后RTSP客户端关闭。这个时候Peer需要关闭所有连接和通道，销毁ProxyP2PSession对象和ProxySocketBegin对象，关闭连接。
-- **期望结果**：正常关闭。
-- **实际结果**：正常
-- **出现的问题**:刚刚开始的时候出现了ICE协议重复发送的问题，后面经过检查，原来是Session被及早的Destroy了导致ICE协议到来的时候没有找到相应的Session而引发的错误。Session及早 被Destory是因为我在接收到自己定义的P2P System Command的时候关闭的本地Tunnel,然后就会Destory Session。
-- **解决方案**：我在接收到P2P System Command关闭通道的命令的时候，并不关闭通道，而等到ICE协议自动关闭通道。
-- **其它可能的注意事项**：在单个连接的时候，有时候会出现连接不上的问题，这个时候Peer程序表现为一直在通过服务器和另一个Peer进行交互发送数据，但是连接不成功。
+* **参与测试程序**：两个Peer结点，一个RTSP客户端，一个RTSPServer。
+* **测试描述**:两个Peer结点通过RTSP客户端正常进行连接，RTSPServer正常运行，然后RTSP客户端关闭。这个时候Peer需要关闭所有连接和通道，销毁ProxyP2PSession对象和ProxySocketBegin对象，关闭连接。
+* **期望结果**：正常关闭。
+* **实际结果**：正常
+* **出现的问题**:刚刚开始的时候出现了ICE协议重复发送的问题，后面经过检查，原来是Session被及早的Destroy了导致ICE协议到来的时候没有找到相应的Session而引发的错误。Session及早 被Destory是因为我在接收到自己定义的P2P System Command的时候关闭的本地Tunnel,然后就会Destory Session。
+* **解决方案**：我在接收到P2P System Command关闭通道的命令的时候，并不关闭通道，而等到ICE协议自动关闭通道。
+* **其它可能的注意事项**：在单个连接的时候，有时候会出现连接不上的问题，这个时候Peer程序表现为一直在通过服务器和另一个Peer进行交互发送数据，但是连接不成功。
 ***
 
 ***
-- **参与测试程序**：两个Peer结点，一个RTSP客户端，一个RTSPServer。
-- **测试描述**:两个Peer结点通过RTSP客户端正常进行连接，RTSPServer正常运行，然后RTSP客户端关闭。这个时候Peer需要关闭所有连接和通道，销毁ProxyP2PSession对象和ProxySocketBegin对象，关闭连接，之后，RTSPServer再次请求peer建立一个新的连接，再次关闭，再次连接，再次关闭...
-- **期望结果**：正常连接，关闭。
-- **实际结果**：出错
-- **出现的问题**:第一次连接关闭正常，第二次连接关闭正常，第三次连接关闭出现异常。这个时候可以看到RTSP Server上面有很多正在连接的资源。这种情况的出现，证明有一些资源释放并不彻底。
-- **解决方案**：
-- **其它可能的注意事项**：暂时没有
+* **参与测试程序**：两个Peer结点，一个RTSP客户端，一个RTSPServer。
+* **测试描述**:两个Peer结点通过RTSP客户端正常进行连接，RTSPServer正常运行，然后RTSP客户端关闭。这个时候Peer需要关闭所有连接和通道，销毁ProxyP2PSession对象和ProxySocketBegin对象，关闭连接，之后，RTSPServer再次请求peer建立一个新的连接，再次关闭，再次连接，再次关闭...
+* **期望结果**：正常连接，关闭。
+* **实际结果**：出错
+* **出现的问题**:第一次连接关闭正常，第二次连接关闭正常，第三次连接关闭出现异常。这个时候可以看到RTSP Server上面有很多正在连接的资源。这种情况的出现，证明有一些资源释放并不彻底。
+* **解决方案**：
+* **其它可能的注意事项**：暂时没有
 ***
 
 通过前面两个测试可以看出来，我的程序资源管理非常差，在资源释放的时候出现各种各样的问题。我必须要重新把ProxyP2PSession相关的资源全部检查一次再来测试。对于ProxyP2PSession来说，他下面主要管理两个部分，一部分是P2PConnectionImpletetor一部分是ProxySocketBegin对象。
@@ -108,14 +109,14 @@ P2PConnectionManagement对象是一个全局唯一的静态对象，它在整个
 
 通过这个过程，我渐渐的发现了一个这样的事实：不管是RTSP还是HTTP代理，其实我需要做的主要是一个，要实现HTTPServer这一部分和RTSPServer这一部分，因为对于p2p 代理的另一端来说，其实只需要连接需要连接的服务器而已，另一个Client的Socket并不需要对Client的数据进行任何特别的处理。所以这个地方需要改进。
 
-- 当客户端第一次请求Peer连接服务器，但是客户端把自己的请求的服务器资源写错了，这个时候再把服务器资源改对，连接Peer会导致程序死掉。**已经解决**
-- 在每一次连接的时候，服务器都会出现一次资源被请求了，然后释放了，再请求的信息。也就是说，可能在我建立连接的时候，第一次资源会没有连接上，第二次资源才连接成功。[贤哥说，这是正常现象。当一个客户端请求服务器一个资源的时候，服务器首先会去查询本地是否有这个资源，在这个查询过程当中就会显示这样的信息。服务器查询到这个信息之后，会通知客户端真的可以连接使用这个资源，所以就再次出现访问这个资源的现象。每一次客户端请求的时候，服务器都会检查这个资源，所以都会显示两次。]**已经解决**
-- 多个客户端通过同一个Peer，连接另外一个Peer下面的服务器资源的时候，关闭一个客户端会导致程序出错。**已经解决**
-- ProxySocketBegin当中的状态依然非常的混乱，必须要整理一下了。**已经解决**
-- 深入研究一下智能指针，在一些类当中使用智能指针。
-- 多个客户端（三个以上），通过同一个peer连接服务器，会出现有时候数据卡顿的现象，研究一下这个现象出现的原因。
-- 加入Proxy连接30之后，关闭通道的功能。
-- 使用线程来管理与服务器的连接，也使用线程来管理本地服务器注册的机制。
+* 当客户端第一次请求Peer连接服务器，但是客户端把自己的请求的服务器资源写错了，这个时候再把服务器资源改对，连接Peer会导致程序死掉。**已经解决**
+* 在每一次连接的时候，服务器都会出现一次资源被请求了，然后释放了，再请求的信息。也就是说，可能在我建立连接的时候，第一次资源会没有连接上，第二次资源才连接成功。[贤哥说，这是正常现象。当一个客户端请求服务器一个资源的时候，服务器首先会去查询本地是否有这个资源，在这个查询过程当中就会显示这样的信息。服务器查询到这个信息之后，会通知客户端真的可以连接使用这个资源，所以就再次出现访问这个资源的现象。每一次客户端请求的时候，服务器都会检查这个资源，所以都会显示两次。]**已经解决**
+* 多个客户端通过同一个Peer，连接另外一个Peer下面的服务器资源的时候，关闭一个客户端会导致程序出错。**已经解决**
+* ProxySocketBegin当中的状态依然非常的混乱，必须要整理一下了。**已经解决**
+* 深入研究一下智能指针，在一些类当中使用智能指针。
+* 多个客户端（三个以上），通过同一个peer连接服务器，会出现有时候数据卡顿的现象，研究一下这个现象出现的原因。
+* 加入Proxy连接30之后，关闭通道的功能。
+* 使用线程来管理与服务器的连接，也使用线程来管理本地服务器注册的机制。
 
 在Libjingle当中，资源的释放之所以如此的困难，主要的原因是因为这个库有大量的异步机制。有一些资源是被占用的，如果这个时候把这些占用的资源释放了，那么就会产生问题。所以，资源的释放必须使用异步的机制，不能够直接在一个函数当中调用delete之类的函数来直接释放这个资源。
 
@@ -154,15 +155,17 @@ intsocket = SOCK CONNECTED
 正常的客户端连接情况。
 
 这个时候p2psocket就进行P2P连接，首先，它会和Internal socket 进行通信，客户端结点想连接的服务器资源。
+
 1. 所以在读取Internal数据的时候，internal状态应该是SOCK CONNECTED,但是这仅仅是读取，并不发送，因为这个时候p2psocket还没有连接成功。
 2. 读取到了服务器资源，这个时候就调用ProxySocketBegin对象的StartConnectBySourceIde进行P2P连接。这个时候p2p socket state的状态变成SOCK CONNECT PEER
 3. 当与对方的P2P连接建立成功的时候，就会调用ProxySocketBegin的On P2P Peer Connect Succeed函数，这个函数会调用Proxy P2P Session的Create Client Socket Connect函数，创建一个P2P System Command，通知远端节点去连接真正的服务器。这个时候p2p socket的状态变成了SOCK PEER CONNECT SUCCEED.
 4. 当远程实体Socket连接建立成功的时候，会回复一个给ProxySocketBegin对象的OnP2PSocketConnectionSucceed函数。在这个函数当中我们就可以把p2p socket state变成 SOCK CONNECTED状态了。
 5. 其它方面：在p2p connect没有连接成功之前，理论上是不会出现关于P2P的消息的，所以OnP2PWrite,OnP2PRead,OnP2PClose都不会出现。同样的，在ReadP2PDataToBuffer当中，不应该写入数据。同样p2p socket没有建立连接成功，那么internal socket 也不应该发送数据。
-6. 当p2p socket关闭的时候，当p2p socket关闭的时候，如上面所示的流程\textbf{把internal socket关闭，把internal socket改成SOCK CLOSE状态。}，发送一个执行SOCKET CLOSE的线程消息，在线程消息当中，把P2P Socket的状态改成SOCK CLOSE状态。
+6. 当p2p socket关闭的时候，当p2p socket关闭的时候，如上面所示的流程**把internal socket关闭，把internal socket改成SOCK CLOSE状态。**，发送一个执行SOCKET CLOSE的线程消息，在线程消息当中，把P2P Socket的状态改成SOCK CLOSE状态。
 7. 当internal socket主动关闭的时候，首先把internal socket关闭，然后设置internal socket状态为SOCKET CLOSE.发送关闭p2p socket的消息。在接收On Other Side Socket Close Succeed函数当中接收到了对方关闭socket成功的消息，就把p2p socket的状态设置为SOCK CLOSE
 
 正常的服务器连接情况
+
 1. 当创建一个Client socket 的时候。初始化的状态当中，interal socket 的状态为SOCK CLOSE,而p2p socket的状态为SOCK PEER CONNECT SUCCEED.这个时候internal socket 对去连接相应的服务器。
 2. 正常情况下，当服务器连接成功，会调用RTSPClientSocket的OninternalConnect函数当下就可以把p2p socket的状态改为SOCK CONNECTED，同时可以把internal socket的状态改成SOCKET CONNECTED.
 
@@ -177,7 +180,6 @@ intsocket = SOCK CONNECTED
 7. 在proxy socket begin 和 p2p connection implementator 当中，接收和发送的张缓冲区应该一样大，而且设置成比较小的包，不应该太大，太大容易出问题。
 
 > 模块化的更高要求，对于像libjingle这样的基于消息机制编译模式来说，在一个消息周期内，不应该存在太长久的消息处理，不然可能会造成其它的很多问题。
-
 > 基于消息机制的编程模式更多的来说是一种编译的思维方式，与传统的编程方法有很大的不同，理论上我们也可以像传统的模式那样使用这样的机制，但是实际上，有很多细节性的问题必须要注意。不然必然会造成很多意想不到的问题。比如每一个消息的深度，就不应该太深。这是一个比较大的问题，值得我认真分析一下。
 
 经过综合的考虑，我觉得整个p2p sloution的瓶颈非常有可能是来自于线程问题。不管怎么说，我的程序使用的依然是单线程，一个单线程总是有瓶颈的。

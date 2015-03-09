@@ -3,9 +3,9 @@ layout: post
 title: Task的设计与分析
 ---
 Task是一个状态机，主要用于应用在单个线程里面执行多任务的情况。VZSIP中的Task是移植google libjingle里面的Task，并对它做了一些小的适应性修改。每一个Task都是一个小型的状态机，也就是说每一个Task都有自己的状态。这些状态之间的转移是通过推动TaskRunner来进行的。TaskRunner负责运行所有的Task，让Task从一个状态转移到另一个状态，直到Task结束为止。
-
-
 ![状态机的类关系](/img/task/state_machine_class.png)
+
+<!--more-->
 
 上图是整个状态机的类关系，一共有三个类。
 
@@ -16,7 +16,7 @@ Task是一个状态机，主要用于应用在单个线程里面执行多任务�
 所有的Task都被TaskRunner管理着，一个Task继承者可以是另一个Task的子类，也可以是TaskRunner本身。实际上，TaskRunner就是上面所说的Top Task。所有的Task都是他的Child，我们在管理的时候也只需要管理这个TaskRunner就可以控制整个业务。要启动一个Task则需要调用这个Task的`Start`方法，一旦调用了这个方法，就在`ProcessStart()`里面处理自己的业务。而我们在定义自己的Task的时候，只需要注意在什么状态下Task应该做什么样的工作这样的框架下面，专注于自己的业务，让一切变得非常简单。
 
 下面，将会对Task进行比较深入的分析。首先每一个Task内部都有固定的几个重要的状态。
-```c++
+{% highlight c++ linenos %}
 // Executes a sequence of steps
 class Task : public TaskParent {
  public:
@@ -39,8 +39,8 @@ protected:
   virtual int ProcessResponse() { return STATE_DONE; }
   // Omitted some content, see the code task.h
 };
-```
-```c++
+{% endhighlight %}
+{% highlight c++ linenos %}
   enum {
     STATE_BLOCKED = -1,
     STATE_INIT = 0,
@@ -50,7 +50,7 @@ protected:
     STATE_RESPONSE = 4,
     STATE_NEXT = 5,  // Subclasses which need more states start here and higher
   };
-```
+{% endhighlight %}
 如上面的枚举变量所示，所有的Task都内置了这七种状态。
 * `STATE_INIT`，表明当前的Task刚刚初始化完成，还没有进行任务工作，当声明一个Task的时候，就会默认在这个状态下面。
 * `STATE_START` 当用户调用了一个Task的`Start()`之后，如果没有出错，就会进入这个状态。在这里面会回调用记为Task所实现的虚函数`ProcessStart()`，用户就可以在这里面初始化自己所想要的资源，并且做相应的任务工作。当用户在实现`ProcessStart()`函数的时候，他的返回值就直接状态了这个Task将进入什么样的状态中。

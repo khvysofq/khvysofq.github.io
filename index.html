@@ -7,6 +7,12 @@ layout: default
   {% if site.theme.header_text %}
   <div class="call-out">{{ site.theme.header_text }}</div>
   {% endif %}
+  
+	{% if post.content contains '<!-- more -->' %}
+		{{ post.content | split:'<!-- more -->' | first }}
+	{% else %}
+		{{ post.excerpt }}
+	{% endif %}
 
   <div class="posts">
     {% for post in paginator.posts %}

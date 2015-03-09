@@ -5,18 +5,16 @@ url: "http://example.com" # the base hostname & protocol for your site
 # THEME-SPECIFIC CONFIGURATION
 theme:
   # Meta
-  title: Type Theme
+  title: Khvysofq
   avatar: avatar.png
   gravatar: # email md5 hash
-  description: "A website with blog posts and pages" # used by search engines
+  description: "khvysofq website" # used by search engines
   
   # Header and footer text
   header_text: >
-     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-     
-     <p>Remove all header text in <code>_config.yml</code> to disable this feature.</p>
+     <p>只有做到极致，才是有意义的！</p>
   footer_text: >
-   Powered by <a href="http://jekyllrb.com">Jekyll</a> with <a href="https://rohanchandra.github.io/project/type/">Type Theme</a>
+   khvysofq's blog
   
   # Icons
   rss: false
@@ -54,14 +52,15 @@ theme:
   
   # Colors, typography and padding
   # Open the "_sass > base" folder, and open "_variables.scss"
-
+excerpt_separator: <!--more-->
 # PAGINATION
 paginate: 5
 paginate_path: "blog/page:num"
-
 # BUILD SETTINGS
 markdown: redcarpet
-highlighter: pygments
+redcarpet:
+  extensions: ["smart", "tables", "no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript", "with_toc_data"]
+#highlighter: pygments
 sass:
   sass_dir: _sass
   style: :compressed
