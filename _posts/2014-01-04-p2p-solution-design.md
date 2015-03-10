@@ -1,9 +1,10 @@
 ---
 layout: post
-title: P2P Solution设计与实现
+title: P2P客户端接口设计与实现
+feature-img: "img/sample_feature_img.png"
 ---
 ##功能介绍
-第一章 首先会进行功能上面的物理架构介绍，有什么样的功能，能够在什么环境下面运行等等。
+本文主要介绍P2P客户端的接口设计与实现，重点在于记录在整个接口设计过程中所遇到的问题，里面的内部有一些零散，对外没有太多的参考价值，仅当自己有需要的时候记录。
 ![协议嵌套](/img/p2p_sloution/p2p_sloution_framework.png)
 <!--more-->
 

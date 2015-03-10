@@ -1,7 +1,9 @@
 ---
 layout: post
 title: WebRTC(Libjingle) 中的消息、线程与Socket
+feature-img: "img/sample_feature_img_2.png"
 ---
+![线程的重要组成部分](/img/message_thread/libjingle_thread.png)
 
 由于Message、Thread、Socket是三个密不可分的整体，单独分析其中的一部分会给人造成非常大的困扰，所以本章采用由浅入深的方式来分析这一块。
 
@@ -23,6 +25,7 @@ libjingle整个软件的执行模式是基于消息的。在整个libjingle程�
 -   对于消息队列的操作，向自己的消息队列发送消息，向别的线程的消息队列当中发送消息，发送普通消息，发送有执行时间点的消息，取出一个消息并执行它。
 
 -   对于Socket的操作，主要是得到一个创建Socket的工厂（SocketFatory）对象，然后通过这个对象创建相关的套节字。
+-   
 ![线程的重要组成部分](/img/message_thread/message_queue.png)
 
 上图显示的是线程和消息、套节字之间的整体架构。可以看出，实际上Thread是一个面对程序员的对象，而MessageQueue是一个隐藏的对象。Socket的管理完全是由SocketFatory来管理的。

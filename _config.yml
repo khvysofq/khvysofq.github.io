@@ -54,7 +54,7 @@ theme:
   # Open the "_sass > base" folder, and open "_variables.scss"
 excerpt_separator: <!--more-->
 # PAGINATION
-paginate: 5
+paginate: 10
 paginate_path: "blog/page:num"
 # BUILD SETTINGS
 markdown: redcarpet

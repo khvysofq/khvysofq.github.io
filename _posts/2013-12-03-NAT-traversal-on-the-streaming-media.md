@@ -1,8 +1,10 @@
 ---
 layout: post
 title: 基于RTSP协议下的NAT穿越分析与测试
+feature-img: "img/sample_feature_img.png"
 ---
 本文档主要分析在视频监控中进行P2P通信时穿越NAT所要遇到的主要问题和解决方案，文档中会具体分析穿越NAT时可能遇到的主要情况，并且根据这些情况设计解决方案和实验方法。为后面实现P2P的连接打好坚实的基础。
+![Google语音通信的数据流动图](/img/NAT_travesal/all_frame_two.png)
 <!--more-->
 
 ##Introduction

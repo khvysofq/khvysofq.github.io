@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Task的设计与分析
+feature-img: "img/sample_feature_img_2.png"
 ---
 Task是一个状态机，主要用于应用在单个线程里面执行多任务的情况。VZSIP中的Task是移植google libjingle里面的Task，并对它做了一些小的适应性修改。每一个Task都是一个小型的状态机，也就是说每一个Task都有自己的状态。这些状态之间的转移是通过推动TaskRunner来进行的。TaskRunner负责运行所有的Task，让Task从一个状态转移到另一个状态，直到Task结束为止。
 ![状态机的类关系](/img/task/state_machine_class.png)
