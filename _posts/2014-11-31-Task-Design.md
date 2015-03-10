@@ -52,6 +52,7 @@ protected:
   };
 {% endhighlight %}
 如上面的枚举变量所示，所有的Task都内置了这七种状态。
+
 * `STATE_INIT`，表明当前的Task刚刚初始化完成，还没有进行任务工作，当声明一个Task的时候，就会默认在这个状态下面。
 * `STATE_START` 当用户调用了一个Task的`Start()`之后，如果没有出错，就会进入这个状态。在这里面会回调用记为Task所实现的虚函数`ProcessStart()`，用户就可以在这里面初始化自己所想要的资源，并且做相应的任务工作。当用户在实现`ProcessStart()`函数的时候，他的返回值就直接状态了这个Task将进入什么样的状态中。
 * `STATE_RESPONSE`，这个算是Task第二个正常状态，如上面Task类里面`ProcessResonse`函数的实现一样，如果用户的子类中没有重载这个函数，那么进入`STATE_RESPONSE`状态的Task会马上进入`STATE_DONE`的状态。
@@ -65,6 +66,7 @@ Task的状态管理，看起来是比较麻烦，主要是文字描述上面有�
 ![状态转移图](/img/task/TaskStateProcess.png)
 
 如上图所示，这就是整个Task执行过程中的状态转移图。绿色都是状态，而蓝色是其中关于Task里面被执行的过程。可以看到，一般情况下只会执行里面的`ProcessStart`。
+
 * 如果`ProcessStart`返回的是`STATE_RESPONE`，而自己又重载了`ProcesssResponse`的话，那么再会执行自己的`ProcessResponse`。
 * 如果进入了`STATE_BLOCK`状态，那么只会等到自己其它地方调用`Abort`和`Stop`的时候才会被删除，或者自己设置了Task超时，等到`OnTimeout`被回调的时候再被删除。
 * 如果自己定义了`STATE_NEXT`状态，并且重载了`Process`函数，接下来的流程就由自己控制，但最终还是要回到最基本的这几个状态中来。
