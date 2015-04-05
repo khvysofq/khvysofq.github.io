@@ -12,7 +12,7 @@ theme:
   
   # Header and footer text
   header_text: >
-     <p>只有做到极致，才是有意义！</p>
+     <p>只有做到极致，才有意义！</p>
   footer_text: >
    khvysofq's blog
   
@@ -24,7 +24,7 @@ theme:
   dribbble: 
   facebook: 
   flickr: 
-  github: "rohanchandra/type-theme"
+  github: "khvysofq"
   google_plus: 
   instagram: 
   linkedin:  # full URL
